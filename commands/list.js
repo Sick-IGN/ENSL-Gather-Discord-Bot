@@ -1,7 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-  name: 'list',
-  description: 'List the players in the gather.',
-  execute(message, players) {
+  data: new SlashCommandBuilder()
+    .setname('list')
+    .setdescription('List the players in the gather.'),
+  async execute(message, players) {
     // Get the list of players
     const playerNames = players.map(id => `<@${id}>`);
 

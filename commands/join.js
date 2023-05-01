@@ -1,7 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-  name: 'join',
-  description: 'Join the gather.',
-  execute(message, players) {
+  data: new SlashCommandBuilder() 
+    .setname('join')
+    .setdescription('Join the gather.'),
+  async execute(message, players) {
     // Get the player's ID from the message
     const playerId = message.author.id;
 
