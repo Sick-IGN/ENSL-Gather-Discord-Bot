@@ -1,22 +1,33 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { startGather } = require('../utils.js')
 
 module.exports = {
   data: new SlashCommandBuilder() 
-    .setname('join')
-    .setdescription('Join the gather.'),
-  async execute(message, players) {
-    // Get the player's ID from the message
-    const playerId = message.author.id;
+    .setName('join')
+    .setDescription('Join the gather.'),
+  async execute(interaction, players) {
+    // Get the player's ID from the interaction
+    const playerId = interaction.user.id;
 
     // Check if the player is already in the list
     if (players.includes(playerId)) {
-      message.reply('You are already in the gather.');
+      interaction.reply('You are already in the gather.');
       return;
+    }
+
+    //If gather is full and starting
+    if (players.length >= 12) {
+      interaction.reply('Gather is currently starting, please wait.');
     }
 
     // Add the player to the list
     players.push(playerId);
 
-    message.reply('You have joined the gather.');
+    interaction.reply('You have joined the gather.');
+
+    //Check if gather is now full
+    if (players.length == 12) {
+      startGather(players);
+    }    
   }
 }
