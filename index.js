@@ -15,9 +15,9 @@ client.once(Events.ClientReady, c => {
 let players = [];
 
 // Import the command modules
-const joinCommand = require('commands/join.js');
-const leaveCommand = require('commands/leave.js');
-const listCommand = require('commands/list.js');
+const joinCommand = require('./commands/join.js');
+const leaveCommand = require('./commands/leave.js');
+const listCommand = require('./commands/list.js');
 
 // Map each command to its name
 const commands = new Map([
