@@ -1,3 +1,7 @@
 {
-	"clientId": "1102302339446100099"
+	"clientId": "1102302339446100099",
+	"dbhost": "localhost",
+	"dbuser": "gatherbot",
+	"dbdatabase": "bot_data",
+	"channelId": "1106775407337943101"
 }

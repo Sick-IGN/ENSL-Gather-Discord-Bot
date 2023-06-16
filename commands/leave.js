@@ -1,10 +1,11 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { endGather } = require("../utils.js")
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('leave')
     .setDescription('Leave the gather.'),
-  async execute(interaction, players) {
+  async execute(client, interaction, players) {
     // Get the player's ID from the interaction
     const playerId = interaction.user.id;
 
@@ -12,6 +13,10 @@ module.exports = {
     if (!players.includes(playerId)) {
       interaction.reply('You are not in the gather.');
       return;
+    }
+
+    if (players.length == 12) {
+      endGather();
     }
 
     const index = players.indexOf(playerId);

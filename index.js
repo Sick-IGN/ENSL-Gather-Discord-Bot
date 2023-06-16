@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { token } = require('./token.json');
+const { token } = require('./private.json');
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -36,7 +36,7 @@ client.on(Events.InteractionCreate, async interaction => {
 	if (!command) return;
 
 	try {
-		await command.execute(interaction, players);
+		await command.execute(client, interaction, players);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {

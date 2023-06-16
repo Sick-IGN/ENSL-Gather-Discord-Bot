@@ -4,7 +4,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('list')
     .setDescription('List the players in the gather.'),
-  async execute(interaction, players) {
+  async execute(client, interaction, players) {
     
     // Get the list of players
     const playerNames = players.map(id => {

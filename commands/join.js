@@ -5,7 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder() 
     .setName('join')
     .setDescription('Join the gather.'),
-  async execute(interaction, players) {
+  async execute(client, interaction, players) {
     // Get the player's ID from the interaction
     const playerId = interaction.user.id;
 
@@ -26,8 +26,8 @@ module.exports = {
     interaction.reply('You have joined the gather.');
 
     //Check if gather is now full
-    if (players.length == 12) {
-      startGather(players);
+    if (players.length == 1) {
+      startGather(client, players);
     }    
   }
 }
