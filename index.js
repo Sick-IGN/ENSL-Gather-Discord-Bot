@@ -23,6 +23,7 @@ for (const file of commandFiles) {
 }
 
 let players = []; 
+let flipList = [];
 
 client.once(Events.ClientReady, c => {
 	console.log(`Ready! Logged in as ${c.user.tag}`);
@@ -36,7 +37,7 @@ client.on(Events.InteractionCreate, async interaction => {
 	if (!command) return;
 
 	try {
-		await command.execute(client, interaction, players);
+		await command.execute(client, interaction, players, flipList);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {
