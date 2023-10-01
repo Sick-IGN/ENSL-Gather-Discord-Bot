@@ -1,6 +1,6 @@
 const { dbpassword } = require("./private.json");
-const { dbhost, dbuser, dbdatabase, channelId } = require("./config.json");
-const { ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require("discord.js");
+const { dbhost, dbport, dbuser, dbdatabase, channelId } = require("./config.json");
+const { StringSelectMenuOptionBuilder, StringSelectMenuBuilder, ActionRowBuilder, ComponentType } = require("discord.js");
 const mysql = require("mysql");
 
 //Gather vote logic
@@ -14,7 +14,7 @@ async function startGather(client, players) {
 
   //Marine Captain, Alien Captain, Map, Server
   let results = [-1, -1, -1, -1];
-  await votes(client, channel, players, results);
+  await votes(client, channel , players, results);
 }
 
 async function votes(client, channel, players, results) {
@@ -22,177 +22,116 @@ async function votes(client, channel, players, results) {
     const player = channel.guild.members.cache.get(id);
     return `${player.user.username}`;
   });
-  const maxSelections = 2;
 
   (async () => {
     try {
-      //Button for each player
-      const playerButtons = playerNames.map((playerName) =>
-        new ButtonBuilder()
-          .setLabel(playerName)
-          .setCustomId(playerName)
-          .setStyle(ButtonStyle.Primary)
+      //Selection for each player
+      const playerRows = playerNames.map((playerName) =>
+        new StringSelectMenuOptionBuilder()
+        .setLabel(playerName)
+        .setValue(playerName)
       );
 
-      //Button for each map
+      //Selection for each map
       const mapQuery = "SELECT * FROM `maps`";
       const mapDBReturn = await queryDatabase(mapQuery);
-      const mapButtons = mapDBReturn.map((row) =>
-        new ButtonBuilder()
+      const mapRows = mapDBReturn.map((row) =>
+        new StringSelectMenuOptionBuilder()
           .setLabel(row.publicName)
-          .setCustomId(row.publicName)
-          .setStyle(ButtonStyle.Primary)
+          .setValue(row.publicName)
       );
 
-      //Button for each server
+      //Selection for each server
       const serverQuery = "SELECT * FROM `servers`";
       const serverDBReturn = await queryDatabase(serverQuery);
-      const serverButtons = serverDBReturn.map((row) =>
-        new ButtonBuilder()
+      const serverRows = serverDBReturn.map((row) =>
+        new StringSelectMenuOptionBuilder()
           .setLabel(row.name)
-          .setCustomId(row.name)
-          .setStyle(ButtonStyle.Primary)
+          .setValue(row.name)
       );
 
-      //ActionRows for the buttons
-      const playerRows = splitRow(playerButtons, 4);
-      const mapRows = splitRow(mapButtons, 4);
-      const serverRows = splitRow(serverButtons, 4);
+      const playerMenu = new ActionRowBuilder()
+        .addComponents(new StringSelectMenuBuilder()
+          .setCustomId('players')
+          .setPlaceholder('Pick your captains! 2 votes.')
+          .addOptions(...playerRows)
+          .setMinValues(1)
+          .setMaxValues(2)
+        );
+
+      const mapMenu = new ActionRowBuilder()
+        .addComponents(new StringSelectMenuBuilder()
+          .setCustomId('maps')
+          .setPlaceholder('Pick your map! 2 votes.')
+          .addOptions(...mapRows)
+          .setMinValues(1)
+          .setMaxValues(2)
+        );
+
+      const serverMenu = new ActionRowBuilder()
+        .addComponents(new StringSelectMenuBuilder()
+          .setCustomId('servers')
+          .setPlaceholder('Pick your server! 2 votes.')
+          .addOptions(...serverRows)
+          .setMinValues(1)
+          .setMaxValues(2)
+        );
 
       //Send message with player votes
       const playerMessage = await channel.send({
         content: "Please vote for team captains! 2 votes!",
-        components: [...playerRows],
+        components: [playerMenu],
       });
       const mapMessage = await channel.send({
         content: "Please vote for maps! 2 votes!",
-        components: [...mapRows],
+        components: [mapMenu],
       });
       const serverMessage = await channel.send({
         content: "Please vote for servers! 2 votes!",
-        components: [...serverRows],
+        components: [serverMenu],
       });
 
       const playerCollector = playerMessage.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 60000,
+        componentType: ComponentType.StringSelect,
+        time: 30000,
       });
       const mapCollector = mapMessage.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 60000,
+        componentType: ComponentType.StringSelect,
+        time: 30000,
       });
       const serverCollector = serverMessage.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 60000,
+        componentType: ComponentType.StringSelect,
+        time: 30000,
       });
 
-      let voteCount = new Map();
-      players.forEach((currentValue) => {
-        //[playervotes, mapvotes, servervotes]
-        voteCount.set(currentValue, [0, 0, 0]);
-      });
-
-      await playerCollector.on("collect", (interaction) => {
-        const userId = interaction.user.id;
-        const userVotes = voteCount.get(userId)[0];
-
-        if (userVotes >= maxSelections) {
-          interaction.reply({
-            content:
-              "You have already selected the maximum number of votes. Please remove votes before voting more.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        voteCount.set(userId, [
-          userVotes + 1,
-          voteCount.get(userId)[1],
-          voteCount.get(userId)[2],
-        ]);
-        const button = interaction.component;
-        button.setStyle(ButtonStyle.Success); 
-        button.setDisabled(true);
-        interaction.reply({
-          content: "Success!",
-          ephemeral: true,
-        });
+      playerCollector.on("collect", (interaction) => {
+        interaction.reply({content: "Votes received.", ephemeral: true})
       });
 
       mapCollector.on("collect", (interaction) => {
-        const userId = interaction.user.id;
-        const userVotes = voteCount.get(userId)[1];
-
-        if (userVotes >= maxSelections) {
-          interaction.reply({
-            content:
-              "You have already selected the maximum number of votes. Please remove votes before voting more.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        voteCount.set(userId, [
-          voteCount.get(userId)[0],
-          userVotes + 1,
-          voteCount.get(userId)[2],
-        ]);
-        const button = interaction.component;
-        button.setStyle(ButtonStyle.Success);
-        button.setDisabled(true);
-        interaction.reply({
-          content: "Success!",
-          ephemeral: true,
-        });
+        interaction.reply({content: "Votes received.", ephemeral: true})        
       });
 
       serverCollector.on("collect", (interaction) => {
-        const userId = interaction.user.id;
-        const userVotes = voteCount.get(userId)[2];
-
-        if (userVotes >= maxSelections) {
-          interaction.reply({
-            content:
-              "You have already selected the maximum number of votes. Please remove votes before voting more.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        voteCount.set(userId, [
-          voteCount.get(userId)[0],
-          voteCount.get(userId)[1],
-          userVotes + 1,
-        ]);
-
-        const button = new ButtonBuilder()
-          .setStyle(ButtonStyle.Success)
-          .setLabel(interaction.customId)
-          .setCustomId(interaction.customId)
-          .toJSON();
-
-        //interaction.reply({
-        //  content: `You have selected ${interaction.customId}.`,
-        //  ephemeral: true
-        //});
-
-        interaction.component.style = ButtonStyle.Success;
-        let allComponents = interaction.message.components;
-        interaction.update({ components: allComponents });
-        interaction.reply({
-          content: `You have selected ${interaction.customId}.`,
-          ephemeral: true,
-        });
+        interaction.reply({content: "Votes received.", ephemeral: true})        
       });
+      
 
       playerCollector.on("end", (collected) => {
-        console.log("boob");
+        const [interactionId, interaction] = collected.entries().next().value;
+
+        const selectedValues = [...interaction.values()];
+
+        // Do whatever you need with the selected values (e.g., logging them)
+        console.log(`Interaction ID: ${interactionId}`);
+        console.log(`Selected Values: ${selectedValues.join(', ')}`); // If selectedValues is an array of strings
+
       });
       mapCollector.on("end", (collected) => {
-        console.log("boobs");
+        //console.log(collected[0].values);
       });
       serverCollector.on("end", (collected) => {
-        console.log("boobies");
+        //console.log(collected[0].values);
       });
     } catch (error) {
       console.error("Something broked :) ", error);
@@ -225,6 +164,7 @@ function splitRow(inbuttons, length) {
 const queryDatabase = (query) => {
   const connection = mysql.createConnection({
     host: dbhost,
+    port: dbport,
     user: dbuser,
     password: dbpassword,
     database: dbdatabase,

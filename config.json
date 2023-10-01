@@ -1,6 +1,7 @@
 {
 	"clientId": "1102302339446100099",
-	"dbhost": "localhost",
+	"dbhost": "68.196.197.227",
+	"dbport": "3306",
 	"dbuser": "gatherbot",
 	"dbdatabase": "bot_data",
 	"channelId": "1106775407337943101"
